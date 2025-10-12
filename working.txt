@@ -1,0 +1,2 @@
+python app.py predict --sprint-csv data/sprint_data.csv --team-size 5 --sprint-duration-days 14 --avg-story_points_per_member 8 --bugs-last-sprint 3
+- model trains the sprint data

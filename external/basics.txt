@@ -1,0 +1,2 @@
+MAE= mean_absolute_error
+R^2= coefficient of determination
