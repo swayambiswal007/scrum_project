@@ -1,2 +1,6 @@
 MAE= mean_absolute_error
 R^2= coefficient of determination
+
+running commands ->
+python app.py summarize --input data/standups.json
+python app.py predict --sprint-csv data/sprint_data.csv --team-size ... 
