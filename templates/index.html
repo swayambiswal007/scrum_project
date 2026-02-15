@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Scrum Predictor</title>
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --card-bg: white;
+            --text-primary: #2d3748;
+            --text-secondary: #718096;
+            --input-bg: #f7fafc;
+            --input-border: #e2e8f0;
+            --input-border-hover: #cbd5e0;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+        }
+
+        body.dark-mode {
+            --bg-gradient: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+            --card-bg: #2d3748;
+            --text-primary: #f7fafc;
+            --text-secondary: #cbd5e0;
+            --input-bg: #1a202c;
+            --input-border: #4a5568;
+            --input-border-hover: #718096;
+            --shadow-color: rgba(0, 0, 0, 0.6);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            transition: background 0.3s ease;
+        }
+
+        .container {
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px var(--shadow-color);
+            max-width: 500px;
+            width: 100%;
+            padding: 40px;
+            animation: slideUp 0.5s ease-out;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--input-bg);
+            border: 2px solid var(--input-border);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.1);
+            border-color: #667eea;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 35px;
+            margin-top: 10px;
+        }
+
+        .icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        h1 {
+            color: var(--text-primary);
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #a0aec0;
+            font-size: 18px;
+            pointer-events: none;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 14px 16px 14px 45px;
+            border: 2px solid var(--input-border);
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            background: var(--input-bg);
+            color: var(--text-primary);
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+            background: var(--card-bg);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        input[type="number"]:hover {
+            border-color: var(--input-border-hover);
+        }
+
+        /* Remove spinner arrows */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 16px;
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-submit::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn-submit:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .btn-submit span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .result-card {
+            margin-top: 30px;
+            padding: 25px;
+            background: var(--primary-gradient);
+            border-radius: 16px;
+            text-align: center;
+            animation: fadeIn 0.5s ease-out;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .result-label {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .result-value {
+            color: white;
+            font-size: 42px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .result-icon {
+            font-size: 36px;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .info-item {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 8px;
+            text-align: left;
+        }
+
+        .info-item-label {
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.7);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .info-item-value {
+            font-size: 16px;
+            color: white;
+            font-weight: 600;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .container {
+                padding: 30px 25px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .result-value {
+                font-size: 36px;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Loading state */
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-submit.loading::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            top: 50%;
+            left: 50%;
+            margin-left: -8px;
+            margin-top: -8px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode">
+            <span id="theme-icon">🌙</span>
+        </div>
+
+        <div class="header">
+            <div class="icon">🚀</div>
+            <h1>AI Scrum Sprint Predictor</h1>
+            <p class="subtitle">Predict your next sprint's story points with AI</p>
+        </div>
+
+        <form method="POST" id="prediction-form">
+            <div class="form-group">
+                <label for="team_size">Team Size</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">👥</span>
+                    <input type="number" id="team_size" name="team_size" min="1" required placeholder="e.g., 5" value="{{ request.form.get('team_size', '') }}">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="sprint_duration_days">Sprint Duration (days)</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">📅</span>
+                    <input type="number" id="sprint_duration_days" name="sprint_duration_days" min="1" required placeholder="e.g., 14" value="{{ request.form.get('sprint_duration_days', '') }}">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="avg_story_points_per_member">Avg Story Points per Member</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">📊</span>
+                    <input type="number" id="avg_story_points_per_member" name="avg_story_points_per_member" step="0.1" min="0" required placeholder="e.g., 8.5" value="{{ request.form.get('avg_story_points_per_member', '') }}">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="bugs_last_sprint">Bugs Last Sprint</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">🐛</span>
+                    <input type="number" id="bugs_last_sprint" name="bugs_last_sprint" min="0" required placeholder="e.g., 3" value="{{ request.form.get('bugs_last_sprint', '') }}">
+                </div>
+            </div>
+
+            <button type="submit" class="btn-submit">
+                <span>Calculate Prediction</span>
+            </button>
+        </form>
+
+        {% if prediction %}
+        <div class="result-card">
+            <div class="result-label">Predicted Story Points</div>
+            <div class="result-value">
+                <span class="result-icon">🎯</span>
+                <span>{{ "%.1f"|format(prediction) }}</span>
+            </div>
+            
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-item-label">Team Size</div>
+                    <div class="info-item-value">{{ request.form.get('team_size', '') }} members</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-item-label">Sprint Duration</div>
+                    <div class="info-item-value">{{ request.form.get('sprint_duration_days', '') }} days</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-item-label">Avg Points/Member</div>
+                    <div class="info-item-value">{{ request.form.get('avg_story_points_per_member', '') }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-item-label">Last Sprint Bugs</div>
+                    <div class="info-item-value">{{ request.form.get('bugs_last_sprint', '') }} bugs</div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        // Dark mode toggle
+        function toggleTheme() {
+            const body = document.body;
+            const themeIcon = document.getElementById('theme-icon');
+            
+            body.classList.toggle('dark-mode');
+            
+            if (body.classList.contains('dark-mode')) {
+                themeIcon.textContent = '☀️';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                themeIcon.textContent = '🌙';
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        // Load saved theme
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme');
+            const themeIcon = document.getElementById('theme-icon');
+            
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                themeIcon.textContent = '☀️';
+            }
+        });
+
+        // Form submission animation
+        document.getElementById('prediction-form').addEventListener('submit', function(e) {
+            const btn = this.querySelector('.btn-submit');
+            btn.classList.add('loading');
+            btn.disabled = true;
+        });
+
+        // Add input validation and formatting
+        const numberInputs = document.querySelectorAll('input[type="number"]');
+        numberInputs.forEach(input => {
+            input.addEventListener('input', function() {
+                if (this.value < 0) this.value = 0;
+            });
+        });
+    </script>
+</body>
+</html>
